@@ -1,30 +1,42 @@
 const axios = require('axios');
 require('dotenv').config();
 
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
 class ChatService {
   async sendMessage(userMessage, context = '') {
     try {
       const systemContext = context ? `Context: ${context}\n\n` : '';
-      const fullMessage = `${systemContext}User: ${userMessage}`;
+      const fullMessage = `${systemContext}${userMessage}`;
 
-      // Using Gemini API directly
+      // Using Groq API directly
       const response = await axios.post(
-        'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
+        GROQ_API_URL,
         {
-          contents: [{
-            parts: [{
-              text: fullMessage
-            }]
-          }]
+          model: 'mixtral-8x7b-32768',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful AI assistant for eOffice.'
+            },
+            {
+              role: 'user',
+              content: fullMessage
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2048
         },
         {
-          params: {
-            key: process.env.GEMINI_API_KEY
+          headers: {
+            Authorization: `Bearer ${GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
           }
         }
       );
 
-      const aiResponse = response.data.candidates[0].content.parts[0].text;
+      const aiResponse = response.data.choices[0].message.content;
       return aiResponse;
     } catch (error) {
       console.error('Error in ChatService:', error.message);
@@ -35,22 +47,31 @@ class ChatService {
   async generateResponse(prompt) {
     try {
       const response = await axios.post(
-        'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
+        GROQ_API_URL,
         {
-          contents: [{
-            parts: [{
-              text: prompt
-            }]
-          }]
+          model: 'mixtral-8x7b-32768',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a helpful AI assistant for eOffice.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2048
         },
         {
-          params: {
-            key: process.env.GEMINI_API_KEY
+          headers: {
+            Authorization: `Bearer ${GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
           }
         }
       );
 
-      return response.data.candidates[0].content.parts[0].text;
+      return response.data.choices[0].message.content;
     } catch (error) {
       console.error('Error generating response:', error.message);
       throw new Error('Failed to generate response');

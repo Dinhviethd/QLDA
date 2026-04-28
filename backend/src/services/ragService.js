@@ -1,12 +1,12 @@
 const axios = require('axios');
 const pool = require('../config/database');
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent';
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 /**
  * RAG Pipeline Service
- * Implements Retrieval-Augmented Generation using Gemini API
+ * Implements Retrieval-Augmented Generation using Groq API
  * Retrieves relevant document embeddings and augments user queries
  */
 
@@ -81,26 +81,35 @@ Please provide a helpful, accurate response based on the document context above.
     `;
 
     const response = await axios.post(
-      GEMINI_API_URL,
+      GROQ_API_URL,
       {
-        contents: [{
-          parts: [{
-            text: augmentedPrompt
-          }]
-        }]
+        model: 'mixtral-8x7b-32768',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful AI assistant for eOffice that uses document context to answer questions.'
+          },
+          {
+            role: 'user',
+            content: augmentedPrompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 2048
       },
       {
-        params: {
-          key: GEMINI_API_KEY
+        headers: {
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
         }
       }
     );
 
-    if (response.data.candidates && response.data.candidates.length > 0) {
-      return response.data.candidates[0].content.parts[0].text;
+    if (response.data.choices && response.data.choices.length > 0) {
+      return response.data.choices[0].message.content;
     }
 
-    throw new Error('No response from Gemini API');
+    throw new Error('No response from Groq API');
   } catch (error) {
     console.error('Error generating RAG response:', error);
     throw error;

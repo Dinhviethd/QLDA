@@ -10,29 +10,29 @@ import Documents from './pages/Documents';
 function App() {
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Check authentication status
-    checkAuth();
-  }, []);
+  // useEffect(() => {
+  //   // Check authentication status
+  //   checkAuth();
+  // }, []);
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/check`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        // User is authenticated
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const checkAuth = async () => {
+  //   try {
+  //     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/check`, {
+  //       credentials: 'include',
+  //     });
+  //     if (response.ok) {
+  //       // User is authenticated
+  //     }
+  //   } catch (error) {
+  //     console.error('Auth check failed:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div className="loading">Loading...</div>;
+  // }
 
   return (
     <Router>
